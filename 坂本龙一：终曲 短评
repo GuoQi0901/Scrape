@@ -1,0 +1,40 @@
+# Crawl Douban.cn with bs4
+#url=https://movie.douban.com/subject/26984189/comments?status=P
+
+import os.path
+import requests
+from bs4 import BeautifulSoup
+
+def download_page(url):
+    #伪装成浏览器
+    headers = {'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36'}
+    r = requests.get(url,headers=headers)
+    return r.text
+
+def get_content(html):
+    output = """Comments from {} : {}\n------------\n"""
+    soup = BeautifulSoup(html,'html.parser')
+    con = soup.find(id='comments')
+    con_list = con.find_all('div',class_="comment-item")
+    for i in con_list:
+        author = i.find('span',class_='comment-info').find('a').string
+        content = i.find('span',class_='short').get_text()
+        save_txt(output.format(author,content))
+
+def save_txt(*args):
+    path='download'
+    fpath = os.path.join(path,'MoiveDouban.txt')
+    for i in args:
+        with open(fpath,'a',encoding='utf-8') as f:
+            print('output:',fpath)
+            f.write(i)
+            f.write('\r\n')
+    
+def main():
+    url = 'https://movie.douban.com/subject/26984189/comments?status=P'
+    html = download_page(url)
+    get_content(html)
+
+if __name__ == '__main__':
+    main()
+

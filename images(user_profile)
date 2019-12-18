@@ -1,0 +1,45 @@
+# scraping User profile
+import os.path
+import requests
+from bs4 import BeautifulSoup
+from time import sleep
+
+def download_page(url):
+#伪装成浏览器
+    headers = {'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36'}
+    r = requests.get(url,headers=headers)
+    return r.text
+
+def get_images(r):
+    i = 1
+    soup = BeautifulSoup(html,'lxml')
+    con = soup.find(id='comments')
+    imgs = con.find_all('img',class_='')
+    
+    folder_path='./DoubanProfile/'
+     # create new folder 
+    if os.path.exists(folder_path)==False:
+        os.makedirs(folder_path)
+    
+    # get imgs 
+    for src_url in imgs:
+        real_url= src_url['src']
+        img_content = requests.get(real_url).content
+        file_name = folder_path+str(i)+'.jpg'
+          
+     # start to download    
+        with open (file_name,'wb') as wf:
+            wf.write(img_content)
+            
+        print ('downloading',i,'profile')
+        i+=1
+        print ('----done!---')
+
+    
+def main():
+    url = 'https://movie.douban.com/subject/30402296/comments?status=P'
+    html = download_page(url)
+    get_images(html)
+                
+if __name__ == '__main__':
+    main()

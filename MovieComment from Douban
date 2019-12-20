@@ -1,9 +1,9 @@
-# Crawl Douban.cn with bs4
-#url=https://movie.douban.com/subject/26984189/comments?status=P
-
+# get informationn from XPath
 import os.path
 import requests
 from bs4 import BeautifulSoup
+import time 
+from threading import Timer
 
 def download_page(url):
     #伪装成浏览器
@@ -26,15 +26,27 @@ def save_txt(*args):
     fpath = os.path.join(path,'MoiveDouban.txt')
     for i in args:
         with open(fpath,'a',encoding='utf-8') as f:
-            print('output:',fpath)
+            #print('output:',fpath)
             f.write(i)
-            f.write('\r\n')
-    
+            # enter+newline
+            f.write('\r\n')   
+            
+            # set time 
+            t = Timer(60,get_content)
+            t.start()# 
+
+# from continues pages 
 def main():
-    url = 'https://movie.douban.com/subject/26984189/comments?status=P'
-    html = download_page(url)
-    get_content(html)
+    start = 0
+    url = 'https://movie.douban.com/subject/26984189/comments?start={}&limit=20&sort=new_score&status=P'
+    # for first 10 pages  
+    for i in range(0,10):
+        p_url = url.format(start)
+        start +=20
+        html = download_page(p_url)
+        get_content(html)
 
 if __name__ == '__main__':
     main()
 
+        

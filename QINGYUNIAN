@@ -1,0 +1,83 @@
+## Including LOGIN(),DOWNLOAD_CONTENT() and SAVE as CSV
+
+import os.path
+import requests
+from bs4 import BeautifulSoup
+import re
+import time
+import csv
+import codecs
+
+# Session for saving Cookie
+s = requests.Session()
+
+'''def login_douban():
+    #first is to log in 
+    login_url = 'https://accounts.douban.com/j/mobile/login/basic'
+    headers = {'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36',
+    'Referer':'https://accounts.douban.com/passport/login?source=movie'}
+    #pass the data 
+    data = {'name':'YOURACCOUNT',
+           'password':'YOURPASSWORD',
+           'remember':'false'}
+    try:
+        r = s.post(login_url,headers=headers,data=data)
+        r.raise_for_status()
+    except:
+        print('try again')
+    print(r.text)'''
+        
+def download_page(url):    
+    #伪装成浏览器
+    headers = {'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36',
+    'Host':'movie.douban.com'}
+    r = requests.get(url,headers=headers,timeout=20)
+    return r.text
+
+def get_content(html):
+    soup = BeautifulSoup(html,'html.parser')
+    con_star = soup.find(id="content")
+    con_star_list = con_star.find_all('div',class_="comment-item")
+    
+    for i in con_star_list:
+        Vote = i.find('span',class_='votes').get_text()
+        Time = i.find('span',class_='comment-time')['title']
+        Rate_Stars = i.find_all('span')[4]['title']
+        print ('Vote :{},Time :{}, Rate :{}'.format(Vote,Time,Rate_Stars))
+        
+        # to write output down
+        csvfile = open('qingyunian.csv','a+',encoding='utf-8-sig',newline='') # avoid mis_code and add newline
+        #csvfile.write(codecs.BOM_UTF8)
+        writer = csv.writer(csvfile) 
+        #writer.writerow([Vote,Time,Rate_Stars])
+        writer.writerow([Vote,Time,Rate_Stars])
+
+'''def save_csv(content):
+    # create file
+    with open('qingyunian.csv','a+',encoding='utf-8',newline='') as file:
+        writer = csv.writer(file)
+        with open('qingyunian.csv','r',encoding='utf-8',newline='') as csvfile:            
+            reader = csv.reader(csvfile)
+            if not [row for row in reader]:            
+                #csvfile = open('qingyunian.csv','a+',encoding='utf-8-sig',newline='') # avoid mis_code and add newline
+                #csvfile.write(codecs.BOM_UTF8)
+                writer = csv.writer(csvfile) 
+                writer.writerow(['VOTE','TIME','RATE']) 
+            else:
+                writer.writerow(content)'''
+
+
+def main(): 
+    #if login_douban():
+    start = 0 
+    url = 'https://movie.douban.com/subject/25853071/comments?start={}&limit=20&sort=new_score&status=P'
+    for i in range(0,10):
+        p_url = url.format(start) 
+        start +=20
+        html = download_page(p_url)
+        get_content(html)
+
+        
+if __name__ == '__main__':    
+    main()
+
